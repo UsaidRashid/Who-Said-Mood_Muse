@@ -7,33 +7,7 @@ const Camera: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [faceData, setFaceData] = useState<any[]>([
-    {
-      comment: "No way",
-      coordinates: {
-        x: 178,
-        y: 212,
-        width: 230,
-        height: 230,
-      },
-      attributes: {
-        age: 30,
-        gender: {
-          Woman: 0.04632303898688406,
-          Man: 99.95367527008057,
-        },
-        emotion: {
-          angry: 0.07,
-          disgust: 0,
-          fear: 0.11,
-          happy: 0.19,
-          sad: 0.09,
-          surprise: 0.06,
-          neutral: 0.49,
-        },
-      },
-    },
-  ]);
+  const [faceData, setFaceData] = useState<any[]>([]);
 
   useEffect(() => {
     const startVideo = async () => {
@@ -102,15 +76,22 @@ const Camera: React.FC = () => {
   }, [isLoading]);
 
   return (
-    <div className="relative w-[640px] h-[480px] mx-auto">
-      <video
-        ref={videoRef}
-        width="640"
-        height="480"
-        className="absolute"
-        autoPlay
+    <div className="relative h-full w-full">
+      <div className="relative h-full w-full flex justify-center">
+        <video
+          ref={videoRef}
+          width={"100%"}
+          height={"100%"}
+          className="absolute w-full h-full object-full"
+          autoPlay
+        />
+      </div>
+      <canvas
+        ref={canvasRef}
+        style={{ display: "none" }}
+        width={640}
+        height={480}
       />
-      <canvas ref={canvasRef} style={{ display: "none" }} />
 
       {faceData.map((face, index) => {
         const { x, y, width, height } = face.coordinates;
@@ -122,8 +103,8 @@ const Camera: React.FC = () => {
             key={index}
             className="absolute border-2 border-green-500"
             style={{
-              left: `${x}px`,
-              top: `${y}px`,
+              left: `${(x / 640) * 100}vw`,
+              top: `${(y / 480) * 100}vh`,
               width: `${width}px`,
               height: `${height}px`,
             }}
