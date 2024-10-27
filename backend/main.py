@@ -5,7 +5,7 @@ import numpy as np
 from utils.face_detection import detect_faces
 from utils.face_analysis import analyze_face_attributes
 from fastapi.middleware.cors import CORSMiddleware
-
+import google.generativeai as genai
 
 
 app = FastAPI()
@@ -35,10 +35,41 @@ async def analyze_face(file: UploadFile = File(...)):
     for (x, y, w, h) in faces:
         face_image = image[y:y+h, x:x+w]
         attributes = analyze_face_attributes(face_image)
+
+        user_text = (
+            f"Age: {attributes.get('age', 'unknown')}, "
+            f"Male: {round(attributes['gender'].get('Man', 0) * 100)}%, "
+            f"Female: {round(attributes['gender'].get('Woman', 0) * 100)}%, "
+        )
+
+        if attributes.get('emotion'):
+            mood_text = ", ".join([f"{mood}: {round(value * 100)}%" for mood, value in attributes['emotion'].items()])
+        else:
+            mood_text = "No mood data available."
+
+        user_text += f"Mood: {mood_text}"
+
+
+
+        apiKey = "AIzaSyDLzDcz_h9JAOFmJmOufB0YGVLYCQW27ZM"
+        genai.configure(api_key=apiKey)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+
+        prompt = "Consider you are talking to your friend , provide a concise and sarcasting comment to the following information about your friend, using only plain text and avoiding any special characters, symbols, or punctuation (only full stops & commas are allowed) :\n"+user_text
+
+        response =model.generate_content(prompt)
+        comment = response.text if response else "No comment available."
+
+
+
         face_data.append({
             "coordinates": {"x": int(x), "y": int(y), "width": int(w), "height": int(h)},
-            "attributes": attributes
+            "attributes": attributes,
+            "comment": comment
         })
+
+    
+    
 
     return {
         "filename": file.filename,

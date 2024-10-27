@@ -9,6 +9,7 @@ const Camera: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [faceData, setFaceData] = useState<any[]>([
     {
+      comment: "No way",
       coordinates: {
         x: 178,
         y: 212,
@@ -77,12 +78,12 @@ const Camera: React.FC = () => {
             setIsLoading(true);
 
             try {
-              //   const response = await axios.post(
-              //     "http://127.0.0.1:8000/analyze-face/",
-              //     formData
-              //   );
-              //   console.log(response?.data);
-              //   setFaceData(response?.data?.faces);
+              const response = await axios.post(
+                "http://127.0.0.1:8000/analyze-face/",
+                formData
+              );
+              console.log(response?.data);
+              setFaceData(response?.data?.faces);
             } catch (error) {
               console.error("Error uploading image", error);
             } finally {
@@ -166,6 +167,15 @@ const Camera: React.FC = () => {
                   <p>N/A</p>
                 )}
               </div>
+            </div>
+            <div
+              className="absolute bg-black/80 text-red-300 drop-shadow-[0_0_5px_rgba(255,0,0,0.8)] p-3 rounded shadow-lg"
+              style={{
+                width: "200px",
+                left: `${x + width}px`,
+              }}
+            >
+              <p>{face?.comment ?? ""}</p>
             </div>
           </div>
         );
