@@ -4,9 +4,23 @@ from PIL import Image
 import numpy as np
 from utils.face_detection import detect_faces
 from utils.face_analysis import analyze_face_attributes
+from fastapi.middleware.cors import CORSMiddleware
+
 
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:3000", 
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def root():
