@@ -6,7 +6,6 @@ import axios from "axios";
 const Camera: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [faceData, setFaceData] = useState<any[]>([]);
 
   useEffect(() => {
@@ -35,45 +34,41 @@ const Camera: React.FC = () => {
     };
   }, []);
 
-  const captureImage = async () => {
-    if (videoRef.current && canvasRef.current && !isLoading) {
-      const context = canvasRef.current.getContext("2d");
-      if (context) {
-        canvasRef.current.width = videoRef.current.videoWidth;
-        canvasRef.current.height = videoRef.current.videoHeight;
-
-        context.drawImage(videoRef.current, 0, 0);
-
-        canvasRef.current.toBlob(async (blob) => {
-          if (blob) {
-            const formData = new FormData();
-            formData.append("file", blob, "captured-image.png");
-
-            setIsLoading(true);
-
-            try {
-              const response = await axios.post(
-                "http://127.0.0.1:8000/analyze-face/",
-                formData
-              );
-              console.log(response?.data);
-              setFaceData(response?.data?.faces);
-            } catch (error) {
-              console.error("Error uploading image", error);
-            } finally {
-              setIsLoading(false);
-            }
-          }
-        }, "image/png");
-      }
-    }
-  };
-
   useEffect(() => {
-    const interval = setInterval(captureImage, 3000);
+    const captureImage = async () => {
+      if (videoRef.current && canvasRef.current) {
+        const context = canvasRef.current.getContext("2d");
+        if (context) {
+          canvasRef.current.width = videoRef.current.videoWidth;
+          canvasRef.current.height = videoRef.current.videoHeight;
 
-    return () => clearInterval(interval);
-  }, [isLoading]);
+          context.drawImage(videoRef.current, 0, 0);
+
+          canvasRef.current.toBlob(async (blob) => {
+            if (blob) {
+              const formData = new FormData();
+              formData.append("file", blob, "captured-image.png");
+
+              try {
+                const response = await axios.post(
+                  "http://127.0.0.1:8000/analyze-face/",
+                  formData
+                );
+                console.log(response?.data);
+                setFaceData(response?.data?.faces);
+              } catch (error) {
+                console.error("Error uploading image", error);
+              }
+            }
+          }, "image/png");
+        }
+      }
+    };
+
+    const intervalId = setInterval(captureImage, 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <div className="relative h-full w-full">
